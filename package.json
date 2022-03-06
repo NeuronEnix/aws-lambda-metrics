@@ -1,0 +1,22 @@
+{
+  "name": "aws-lambda-metrics",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NeuronEnix/aws-lambda-metrics.git"
+  },
+  "author": "Kaushik R Bangera",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/NeuronEnix/aws-lambda-metrics/issues"
+  },
+  "homepage": "https://github.com/NeuronEnix/aws-lambda-metrics#readme",
+  "dependencies": {
+    "moment": "^2.29.1"
+  }
+}
