@@ -2,24 +2,23 @@ const { LambdaMetrics } = require("./LambdaMetrics");
 const lambda = new LambdaMetrics();
 
 exports.handler = async (event, context) => {
-    lambda.invoked();
-    console.log( lambda._invokeType );
+  lambda.start(); // marks the start of API logic
+  console.log( lambda.invokeType() ); // log invoke type ( will be either "COLD START" or "WARM START" )
 
-    // Logic
-    
-    const resData = await getResData();
-    resData.metrics = lambda.done().getMetrics();
-    return resData;
+  // Logic
+  await delay( 200 ) // 200ms delay to simulate API logic
+
+  const resData = { code: 200, msg: "OK" };
+  lambda.end(); // marks the end of API logic
+
+  console.log( lambda.getMetrics() ); // log the metrics
+  resData.metrics = lambda.getMetrics(); // send metrics in response
+
+  return resData;
 };
 
-async function getResData( data, delay=500 ) {
-    return new Promise( resolve => {
-        setTimeout(function() {
-            return resolve({
-                responseCode: 200,
-                responseMessage: "OK",
-                responseData: data 
-            })
-        }, delay);
-    })
+async function delay( delayForInMS ) {
+  return new Promise( resolve =>
+    setTimeout( _ => resolve() , delayForInMS )
+  )
 }
