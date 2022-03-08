@@ -1,17 +1,20 @@
-const { LambdaMetrics } = require("./LambdaMetrics");
-const lambda = new LambdaMetrics();
+require('dotenv').config();
+const { lambdaMetricsInstance } = require("./LambdaMetrics");
+const { userList } = require('./user');
+
+const lambda = lambdaMetricsInstance;
 
 exports.handler = async (event, context) => {
+  
   lambda.start(); // marks the start of API logic
   console.log( lambda.invokeType() ); // log invoke type ( will be either "COLD START" or "WARM START" )
 
-  // Logic
-  await delay( 200 ) // 200ms delay to simulate API logic
+  lambda.startTimer( "userList" );
+  const resData = { code: 200, msg: "OK", data: await userList( lambda ) };
+  lambda.endTimer( "userList" );
 
-  const resData = { code: 200, msg: "OK" };
   lambda.end(); // marks the end of API logic
 
-  console.log( lambda.getMetrics() ); // log the metrics
   resData.metrics = lambda.getMetrics(); // send metrics in response
 
   return resData;
