@@ -17,6 +17,9 @@
   },
   "homepage": "https://github.com/NeuronEnix/aws-lambda-metrics#readme",
   "dependencies": {
-    "moment": "^2.29.1"
+    "dotenv": "^16.0.0",
+    "moment": "^2.29.1",
+    "mysql2": "^2.3.3",
+    "sequelize": "^6.17.0"
   }
 }
