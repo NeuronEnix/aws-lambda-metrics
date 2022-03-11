@@ -1,11 +1,12 @@
 const { Sequelize } = require('sequelize');
+const { lambdaMetrics } = require('./LambdaMetrics');
 
 let conn = null;
 // Connecting to DB
 
-const getConnection = async ( lambda ) => {
+const getConnection = async () => {
   if (!conn) {
-    lambda.startTimer( "getConnection" );
+    lambdaMetrics.startTimer( "getConnection" );
     conn = new Sequelize({
       host: process.env.DB_HOST,
       port: process.env.DB_PORT,
@@ -24,7 +25,7 @@ const getConnection = async ( lambda ) => {
       logging: false, // To avoid sql query logs
     });
 
-    lambda.endTimer( "getConnection" );
+    lambdaMetrics.endTimer( "getConnection" );
 
     // conn.beforeConnect(async (config) => { console.log( "beforeConnect") });
     // conn.afterConnect(async (config) => { console.log( "afterConnect") });
