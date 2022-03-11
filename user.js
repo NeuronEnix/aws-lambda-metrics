@@ -7,9 +7,9 @@ async function userList() {
   const userModel = await initUserModel( lambdaMetrics );
   lambdaMetrics.endTimer("initUserModel");
 
-  lambdaMetrics.startTimer("userModel.SELECT");
+  lambdaMetrics.startTimer("getUserListFromDB");
   const userList_DB = userModel.sequelize.query( "SELECT * FROM user", {raw:true, nest: true });
-  lambdaMetrics.endTimer("userModel.SELECT");
+  lambdaMetrics.endTimer("getUserListFromDB");
 
   return userList_DB;
 }

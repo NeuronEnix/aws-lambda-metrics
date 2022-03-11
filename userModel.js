@@ -12,18 +12,14 @@ const initUserModel = async ( lambdaMetrics ) => {
   try {
     if (user) return user;
 
-    lambdaMetrics.startTimer( "initUserModel-uncached" );
     const sequelize = await getConnection( lambdaMetrics );
 
-    lambdaMetrics.startTimer( "sequelize.define" );
     user = sequelize.define('user', userModel, { freezeTableName: true });
-    lambdaMetrics.endTimer( "sequelize.define" );
 
     // lambda.startTimer( "user.sync" );
     // await user.sync({ alter: true });
     // lambda.endTimer( "user.sync" );
 
-    lambdaMetrics.endTimer( "initUserModel-uncached" );
     return user;
     
   } catch (err) {
