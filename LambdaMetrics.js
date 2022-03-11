@@ -41,7 +41,7 @@ class LambdaMetrics {
     
     this.#metrics =   {
       apiReqID: this.#apiReqId, awsReqId: this.#awsReqId,
-      id: this.#containerId, type: this.invokeType(), count: this.#invokeCount,
+      containerId: this.#containerId, type: this.invokeType(), count: this.#invokeCount,
 
       inTime: this.#inTime.format( "HH:mm:ss:SSS" ),
       outTime: this.#outTime.format( "HH:mm:ss:SSS" ),
