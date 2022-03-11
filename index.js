@@ -27,4 +27,4 @@ exports.handler = async (event, context) => {
   
 };
 
-this.handler().then( _ => console.log(_));
+// this.handler().then( _ => console.log(_));
