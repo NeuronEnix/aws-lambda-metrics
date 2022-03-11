@@ -19,7 +19,6 @@ exports.handler = async (event, context) => {
   } catch ( err ) {
 
     console.log( "ERROR", err );
-    
     const resErr = { code: 400, msg: "FAILED" };
     resErr.metrics = lambdaMetrics.end().getMetrics();
     return resErr;
@@ -28,4 +27,4 @@ exports.handler = async (event, context) => {
   
 };
 
-// this.handler().then( _ => console.log(_));
+this.handler().then( _ => console.log(_));
