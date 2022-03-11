@@ -1,14 +1,15 @@
+const { lambdaMetrics } = require("./LambdaMetrics");
 const { initUserModel } = require("./userModel");
 
-async function userList( lambda ) {
+async function userList() {
 
-  lambda.startTimer("initUserModel");
-  const userModel = await initUserModel( lambda );
-  lambda.endTimer("initUserModel");
+  lambdaMetrics.startTimer("initUserModel");
+  const userModel = await initUserModel( lambdaMetrics );
+  lambdaMetrics.endTimer("initUserModel");
 
-  lambda.startTimer("userModel.SELECT");
+  lambdaMetrics.startTimer("userModel.SELECT");
   const userList_DB = userModel.sequelize.query( "SELECT * FROM user", {raw:true, nest: true });
-  lambda.endTimer("userModel.SELECT");
+  lambdaMetrics.endTimer("userModel.SELECT");
 
   return userList_DB;
 }

@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const { getConnection }  = require('./dbConnection');
+const { lambdaMetrics } = require('./LambdaMetrics');
 
 const userModel = {
     user_id:{ type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
@@ -7,22 +8,22 @@ const userModel = {
 }
 
 let user = null;
-const initUserModel = async ( lambda ) => {
+const initUserModel = async ( lambdaMetrics ) => {
   try {
     if (user) return user;
 
-    lambda.startTimer( "initUserModel-uncached" );
-    const sequelize = await getConnection( lambda );
+    lambdaMetrics.startTimer( "initUserModel-uncached" );
+    const sequelize = await getConnection( lambdaMetrics );
 
-    lambda.startTimer( "sequelize.define" );
+    lambdaMetrics.startTimer( "sequelize.define" );
     user = sequelize.define('user', userModel, { freezeTableName: true });
-    lambda.endTimer( "sequelize.define" );
+    lambdaMetrics.endTimer( "sequelize.define" );
 
     // lambda.startTimer( "user.sync" );
     // await user.sync({ alter: true });
     // lambda.endTimer( "user.sync" );
 
-    lambda.endTimer( "initUserModel-uncached" );
+    lambdaMetrics.endTimer( "initUserModel-uncached" );
     return user;
     
   } catch (err) {

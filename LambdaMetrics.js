@@ -1,59 +1,73 @@
 const moment = require( "moment" );
+const { v4: uuidV4 } = require('uuid');
 
 class LambdaMetrics {
-  #instName; #invokeType; #invokeCount;
-  #inTime; #outTime; #totalTime;
-  #timerObj;
+  #metrics; #timerObj;
+  #containerId; #invokeCount;
+  #inTime; #outTime; #prevInvokedTime;
+  #apiReqId; #awsReqId;
 
   constructor() {
-    this.#instName = moment().format( "HH:mm:ss:SSS" );
+    this.#containerId = uuidV4();
     this.#invokeCount = 0;
-    this.#invokeType = "COLD START";
+    this.#prevInvokedTime = null;
     this.#timerObj = {};
   }
 
-  invokeType() { return this.#invokeType };
+  getId() { return this.#containerId; }
+  getMetrics() { return this.#metrics; }
+  invokeType() { return this.#invokeCount > 1 ? "WARM_START" : "COLD_START"; }
+
+  logId(){
+    console.log( "containerId:", this.#containerId );
+    console.log( "apiReqId:", this.#apiReqId );
+    console.log( "awsReqId:", this.#awsReqId );
+  }
     
-  start() {
+  begin( event, context ) {
+    
+    this.#apiReqId = event?.requestContext?.requestId || null;
+    this.#awsReqId = context?.awsRequestId || null;
+    
     this.#inTime = moment();
     this.#invokeCount += 1;
     this.#timerObj = {};
+    this.#metrics = {};
     return this;
   }
 
   end() {
-    const curTime = moment();
-    this.#totalTime = moment.isMoment( this.#inTime ) ? curTime.diff( this.#inTime ) : "N/A";
-    this.#inTime = moment.isMoment( this.#inTime ) ? this.#inTime.format( "HH:mm:ss:SSS" ) : "N/A";
-    this.#outTime = curTime.format( "HH:mm:ss:SSS" );
+    this.#outTime = moment();
+    
+    this.#metrics =   {
+      apiReqID: this.#apiReqId, awsReqId: this.#awsReqId,
+      id: this.#containerId, type: this.invokeType(), count: this.#invokeCount,
+
+      inTime: this.#inTime.format( "HH:mm:ss:SSS" ),
+      outTime: this.#outTime.format( "HH:mm:ss:SSS" ),
+      totalTime: this.#outTime.diff( this.#inTime ),
+      reInvokedIn: moment.isMoment( this.#prevInvokedTime ) ? this.#inTime.diff( this.#prevInvokedTime ) : 0,
+
+      timers: this.#timerObj,
+    };
+    this.#prevInvokedTime = this.#inTime;
     return this;
   }
 
-  getMetrics() {
-    const metricsData =  {
-      name: this.#instName,
-      type: this.#invokeType,
-      count: this.#invokeCount,
-      inTime: this.#inTime,
-      outTime: this.#outTime,
-      totalTime: this.#totalTime,
-      timers: this.#timerObj,
-    };
-
-    this.#invokeType = "WARM START";
-    return metricsData;
-  }
   startTimer( timerID ) {
     this.#timerObj[ timerID ] = moment();
     return this;
   }
+
   endTimer( timerID ) {
     if ( moment.isMoment( this.#timerObj[ timerID ] ) )
       this.#timerObj[ timerID ] = moment().diff( this.#timerObj[ timerID ] );
     return this;
   }
+
 }
 
-const lambdaMetricsInstance = new LambdaMetrics();
+const lambdaMetrics = new LambdaMetrics();
+function newLambdaMetricsInstance() { return new LambdaMetrics(); }
 
-module.exports = { lambdaMetricsInstance };
+module.exports = { lambdaMetrics, newLambdaMetricsInstance };
