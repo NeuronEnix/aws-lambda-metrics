@@ -1,40 +1,47 @@
 # aws-lambda-metrics
 
 ```javascript
-const { LambdaMetrics } = require("./LambdaMetrics");
-const lambda = new LambdaMetrics();
+require('dotenv').config();
+const { lambdaMetricsInstance } = require("./LambdaMetrics");
+const { userList } = require('./user');
+
+const lambda = lambdaMetricsInstance;
 
 exports.handler = async (event, context) => {
+  
   lambda.start(); // marks the start of API logic
   console.log( lambda.invokeType() ); // log invoke type ( will be either "COLD START" or "WARM START" )
 
-  // Logic
-  await delay( 200 ) // 200ms delay to simulate API logic
+  lambda.startTimer( "userList" );
+  const resData = { code: 200, msg: "OK", data: await userList( lambda ) };
+  lambda.endTimer( "userList" );
 
-  const resData = { code: 200, msg: "OK" };
   lambda.end(); // marks the end of API logic
 
-  console.log( lambda.getMetrics() ); // log the metrics
   resData.metrics = lambda.getMetrics(); // send metrics in response
 
   return resData;
 };
 
-async function delay( delayForInMS ) {
-  return new Promise( resolve =>
-    setTimeout( _ => resolve() , delayForInMS )
-  )
-}
 ```
 
+`metrics will be in ms`
 ```javascript
-// Metrics log
+// lambda.getMetrics()
 {
-  name: '09:00:58:188',
-  type: 'COLD START',
-  count: 1,
-  inTime: '09:00:58:192',
-  outTime: '09:00:58:405',
-  totalTime: 213
-}
+    name: '08:48:21:452',
+    type: 'COLD START',
+    count: 1,
+    inTime: '08:48:21:758',
+    outTime: '08:48:22:006',
+    totalTime: 248,
+    timers: {
+      userList: 246,
+      initUserModel: 181,
+      'initUserModel-uncached': 181,
+      getConnection: 174,
+      'sequelize.define': 6,
+      'userModel.SELECT': 15
+    }
+  }
 ```
