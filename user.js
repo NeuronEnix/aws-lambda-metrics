@@ -3,13 +3,13 @@ const { initUserModel } = require("./userModel");
 
 async function userList() {
 
-  lambdaMetrics.startTimer("initUserModel");
+  lambdaMetrics.startTimer("user.initModel");
   const userModel = await initUserModel( lambdaMetrics );
-  lambdaMetrics.endTimer("initUserModel");
+  lambdaMetrics.endTimer("user.initModel");
 
-  lambdaMetrics.startTimer("getUserListFromDB");
-  const userList_DB = userModel.sequelize.query( "SELECT * FROM user", {raw:true, nest: true });
-  lambdaMetrics.endTimer("getUserListFromDB");
+  lambdaMetrics.startTimer("user.getUserFromDB");
+  const userList_DB = await userModel.sequelize.query( "SELECT * FROM user", {raw:true, nest: true });
+  lambdaMetrics.endTimer("user.getUserFromDB");
 
   return userList_DB;
 }

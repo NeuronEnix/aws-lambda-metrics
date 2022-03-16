@@ -1,67 +1,58 @@
-const moment = require( "moment" );
+const { performance } = require("perf_hooks");
 const { v4: uuidV4 } = require('uuid');
+const { LambdaTimer } = require("./LambdaTimer");
 
-class LambdaMetrics {
-  #metrics; #timerObj;
-  #containerId; #invokeCount;
-  #inTime; #outTime; #prevInvokedTime;
-  #apiReqId; #awsReqId;
+class LambdaMetrics extends LambdaTimer {
+  #containerId; #createdAt; #invokeCount; #data;   
+  #prevResponseSentAt;
 
   constructor() {
+    super();
     this.#containerId = uuidV4();
     this.#invokeCount = 0;
-    this.#prevInvokedTime = null;
-    this.#timerObj = {};
+    this.#prevResponseSentAt = performance.now();
+    this.#createdAt = new Date();
   }
 
   getId() { return this.#containerId; }
-  getMetrics() { return this.#metrics; }
+  getMetrics() { return this.#data; }
   invokeType() { return this.#invokeCount > 1 ? "WARM_START" : "COLD_START"; }
+
+  startTimer( timerTag ) { super.startTimer( timerTag ); return this; }
+  endTimer( timerTag ) { super.endTimer( timerTag ); return this;  }
 
   logId(){
     console.log( "containerId:", this.#containerId );
-    console.log( "apiReqId:", this.#apiReqId );
-    console.log( "awsReqId:", this.#awsReqId );
+    console.log( "apiReqId:", this.#data.apiReqId );
+    console.log( "awsReqId:", this.#data.awsReqId );
   }
     
   begin( event, context ) {
-    
-    this.#apiReqId = event?.requestContext?.requestId || null;
-    this.#awsReqId = context?.awsRequestId || null;
-    
-    this.#inTime = moment();
     this.#invokeCount += 1;
-    this.#timerObj = {};
-    this.#metrics = {};
+    super.clearAllTimer();
+
+    this.#data = {
+      containerId: this.#containerId,
+      awsReqId: context?.awsRequestId || null,
+      apiReqId: event?.requestContext?.requestId || null,
+      createdAt: this.#createdAt,
+      
+      type: this.invokeType(),
+      count: this.#invokeCount,
+      
+      inTime: new Date(),
+      reInvokedIn: parseInt( performance.now() - this.#prevResponseSentAt ),
+
+    };
+
     return this;
   }
 
   end() {
-    this.#outTime = moment();
-    
-    this.#metrics =   {
-      apiReqID: this.#apiReqId, awsReqId: this.#awsReqId,
-      containerId: this.#containerId, type: this.invokeType(), count: this.#invokeCount,
-
-      inTime: this.#inTime.format( "HH:mm:ss:SSS" ),
-      outTime: this.#outTime.format( "HH:mm:ss:SSS" ),
-      totalTime: this.#outTime.diff( this.#inTime ),
-      reInvokedIn: moment.isMoment( this.#prevInvokedTime ) ? this.#inTime.diff( this.#prevInvokedTime ) : 0,
-
-      timers: this.#timerObj,
-    };
-    this.#prevInvokedTime = this.#inTime;
-    return this;
-  }
-
-  startTimer( timerID ) {
-    this.#timerObj[ timerID ] = moment();
-    return this;
-  }
-
-  endTimer( timerID ) {
-    if ( moment.isMoment( this.#timerObj[ timerID ] ) )
-      this.#timerObj[ timerID ] = moment().diff( this.#timerObj[ timerID ] );
+    this.#data.outTime = new Date();
+    this.#data.totalTime = this.#data.outTime.valueOf() - this.#data.inTime.valueOf();
+    this.#data.timer = super.getTimer("");
+    this.#prevResponseSentAt = performance.now();
     return this;
   }
 
