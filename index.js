@@ -26,5 +26,3 @@ exports.handler = async (event, context) => {
   }
   
 };
-
-this.handler().then( _ => console.log( JSON.stringify(_, null, 2)));
