@@ -35,20 +35,23 @@ exports.handler = async (event, context) => {
 ```javascript
 // lambdaMetrics.getMetrics()
 {
-  apiReqID: '7ada26aa-be53-48fd-b242-a568e7435c8d',
-  awsReqId: '038a6316-cdf8-4c87-a98e-aa6bf8525988',
-  containerId: '8b7ea697-29e1-4697-b4dd-05420b29cfe3',
-  type: 'COLD_START',
+  containerId: "65d3780d-891f-4af6-bf28-0fc4b7a81728",
+  awsReqId: "ab21cdee-891f-4af6-bf28-132afb5dc456",
+  apiReqId: "fac4e123-891f-4af6-bf28-5613cf32a31b",
+  createdAt: "2022-03-16T16:22:24.503Z",
+  type: "COLD_START",
   count: 1,
-  inTime: '08:42:50:452',
-  outTime: '08:42:50:674',
-  totalTime: 222,
-  reInvokedIn: 0,
-  timers: {
-    userList: 222,
-    initUserModel: 151,
-    getConnection: 144,
-    getUserListFromDB: 16
+  inTime: "2022-03-16T16:22:24.738Z",
+  reInvokedIn: 234,
+  outTime: "2022-03-16T16:22:24.966Z",
+  totalTime: 228,
+  timer: {
+    userList: 227,
+    user: {
+      initModel: 155,
+      getUserFromDB: 71
+    },
+    getConnection: 149
   }
 }
 ```
