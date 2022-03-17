@@ -83,20 +83,8 @@ class LambdaTimer {
   timeIt( timerTag ) {
     this.startTimer( timerTag );
     return ( returnedVal ) => {
-      if ( types.isPromise( returnedVal ) ) {
-        return returnedVal
-          .then( val => {
-            console.log( "then" );
-            return val;
-          })
-          .catch( err => {
-            throw err;
-          })
-          .finally( () => {
-            console.log( "finally");
-            this.endTimer( timerTag );
-          })
-      }
+      if ( types.isPromise( returnedVal ) )
+        return returnedVal.finally( () => this.endTimer( timerTag ) );
       this.endTimer( timerTag );
       return returnedVal;
     }
