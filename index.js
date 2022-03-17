@@ -7,16 +7,19 @@ exports.handler = async (event, context) => {
   try {
 
     lambdaMetrics.begin( event, context ); // marks the start of API logic
+    lambdaMetrics.startTimer( "logicTime" );
 
     // measure time using startTimer and endTimer
-    lambdaMetrics.startTimer( "userListTwice" );
+    lambdaMetrics.startTimer( "user.list" );
     const resData = { code: 200, msg: "OK", data: await userList() };
-    lambdaMetrics.endTimer( "userListTwice" );
+    lambdaMetrics.endTimer( "user.list" );
 
     // measure time using timeIt( timerTag )( func() )   // func can be sync / async
-    lambdaMetrics.timeIt( "userGetDetail" )( await userGetDetail( 1 ) );
+    const userDetail = lambdaMetrics.timeIt( "user.getDetail" )( await userGetDetail( 1 ) );
 
+    lambdaMetrics.endTimer( "logicTime" );
     lambdaMetrics.end(); // marks the end of API logic
+
     resData.metrics = lambdaMetrics.getMetrics(); // send metrics in response
     return resData;
     
@@ -31,4 +34,4 @@ exports.handler = async (event, context) => {
   
 };
 
-this.handler().then( _ => console.log( JSON.stringify(_, null, 2)));
+// this.handler().then( _ => console.log( JSON.stringify(_, null, 2)));
