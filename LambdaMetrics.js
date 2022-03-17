@@ -5,13 +5,17 @@ const { LambdaTimer } = require("./LambdaTimer");
 class LambdaMetrics extends LambdaTimer {
   #containerId; #createdAt; #invokeCount; #data;   
   #prevResponseSentAt;
+  #option;
 
-  constructor() {
+  constructor( option={ log: null } ) { 
     super();
     this.#containerId = uuidV4();
     this.#invokeCount = 0;
     this.#prevResponseSentAt = performance.now();
     this.#createdAt = new Date();
+    this.#option = {
+      log: typeof option.log === "function" ? option.log : null,
+    }
   }
 
   getId() { return this.#containerId; }

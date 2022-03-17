@@ -1,10 +1,14 @@
 const { performance } = require( "perf_hooks" );
 const { LambdaError } = require("./LambdaError");
+const { types } = require("util");
 
 class LambdaTimer {
   #timerObj; #timerTagEndList;  
-
-  constructor() { 
+  #option;
+  constructor( option={ log: null } ) { 
+    this.#option = {
+      log: typeof option.log === "function" ? option.log : null,
+    }
     this.clearAllTimer();
   }
   
@@ -42,6 +46,7 @@ class LambdaTimer {
     }
 
     curObj[ key ] = val;
+    return val;
   }
 
   #getVal( timerTag="" ) {
@@ -64,12 +69,37 @@ class LambdaTimer {
       err.meta.endTimeValue = this.#getVal( timerTag );
       throw new LambdaError( err );
     }
-    this.#setKey( timerTag, parseInt( performance.now() - this.#getVal( timerTag ) ), { overwrite: true } );
+    const elapsedTime = parseInt( performance.now() - this.#getVal( timerTag ) );
+    this.#setKey( timerTag, elapsedTime, { overwrite: true } );
     this.#timerTagEndList.push( timerTag );
+    if( this.#option.log ) this.#option.log( "endTimer:", elapsedTime );
+    return elapsedTime;
   }
 
   getTimer( timerTag="" ) {
     return this.#getVal( timerTag );
+  }
+
+  timeIt( timerTag ) {
+    this.startTimer( timerTag );
+    return ( returnedVal ) => {
+      if ( types.isPromise( returnedVal ) ) {
+        return returnedVal
+          .then( val => {
+            console.log( "then" );
+            return val;
+          })
+          .catch( err => {
+            throw err;
+          })
+          .finally( () => {
+            console.log( "finally");
+            this.endTimer( timerTag );
+          })
+      }
+      this.endTimer( timerTag );
+      return returnedVal;
+    }
   }
 
 }
