@@ -1,4 +1,4 @@
-# aws-lambda-metrics
+# aws-lambda-metrics-client
 
 ```javascript
 require('dotenv').config();
