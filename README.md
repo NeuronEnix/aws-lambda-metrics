@@ -3,19 +3,26 @@
 ```javascript
 require('dotenv').config();
 const { lambdaMetrics } = require("./LambdaMetrics");
-const { userList } = require('./user');
+const { userList, userGetDetail } = require('./user');
 
 exports.handler = async (event, context) => {
 
   try {
 
     lambdaMetrics.begin( event, context ); // marks the start of API logic
+    lambdaMetrics.startTimer( "logicTime" );
 
-    lambdaMetrics.startTimer( "userList" );
+    // measure time using startTimer and endTimer
+    lambdaMetrics.startTimer( "user.list" );
     const resData = { code: 200, msg: "OK", data: await userList() };
-    lambdaMetrics.endTimer( "userList" );
+    lambdaMetrics.endTimer( "user.list" );
 
+    // measure time using timeIt( timerTag )( func() )   // func can be sync / async
+    const userDetail = lambdaMetrics.timeIt( "user.getDetail" )( await userGetDetail( 1 ) );
+
+    lambdaMetrics.endTimer( "logicTime" );
     lambdaMetrics.end(); // marks the end of API logic
+
     resData.metrics = lambdaMetrics.getMetrics(); // send metrics in response
     return resData;
     
@@ -38,20 +45,20 @@ exports.handler = async (event, context) => {
   containerId: "65d3780d-891f-4af6-bf28-0fc4b7a81728",
   awsReqId: "ab21cdee-891f-4af6-bf28-132afb5dc456",
   apiReqId: "fac4e123-891f-4af6-bf28-5613cf32a31b",
-  createdAt: "2022-03-16T16:22:24.503Z",
+  createdAt: "2022-03-17T15:50:35.799Z",
   type: "COLD_START",
   count: 1,
-  inTime: "2022-03-16T16:22:24.738Z",
-  reInvokedIn: 234,
-  outTime: "2022-03-16T16:22:24.966Z",
-  totalTime: 228,
+  inTime: "2022-03-17T15:50:36.033Z",
+  reInvokedIn: 233,
+  outTime: "2022-03-17T15:50:36.263Z",
+  totalTime: 230,
   timer: {
-    userList: 227,
+    totalTime: 225,
     user: {
-      initModel: 155,
-      getUserFromDB: 71
+      list: 223,
+      getDetail: 2
     },
-    getConnection: 149
+    getConnection: 145
   }
 }
 ```
