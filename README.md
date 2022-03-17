@@ -1,4 +1,4 @@
-# aws-lambda-metrics-client
+# aws-lambda-metrics
 
 ```javascript
 require('dotenv').config();
@@ -38,7 +38,9 @@ exports.handler = async (event, context) => {
 };
 ```
 
-`metrics will be in ms`
+
+
+`Metrics will be in milliseconds(ms)`
 ```javascript
 // lambdaMetrics.getMetrics()
 {
