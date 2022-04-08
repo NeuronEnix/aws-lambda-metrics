@@ -58,7 +58,6 @@ exports.handler = async (event, context) => {
     totalTime: 225,
     user.list: 223,
     user.getDetail: 2
-    getConnection: 145
   }
 }
 ```
