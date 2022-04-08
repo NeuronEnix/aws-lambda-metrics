@@ -8,17 +8,17 @@ const userModel = {
 }
 
 let user = null;
-const initUserModel = async ( lambdaMetrics ) => {
+const initUserModel = async () => {
   try {
     if (user) return user;
 
-    const sequelize = await getConnection( lambdaMetrics );
+    const sequelize = await getConnection();
 
     user = sequelize.define('user', userModel, { freezeTableName: true });
 
-    // lambda.startTimer( "user.sync" );
+    // lambdaMetrics.startTimer( "user.sync" );
     // await user.sync({ alter: true });
-    // lambda.endTimer( "user.sync" );
+    // lambdaMetrics.endTimer( "user.sync" );
 
     return user;
     
