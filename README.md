@@ -56,10 +56,8 @@ exports.handler = async (event, context) => {
   totalTime: 230,
   timer: {
     totalTime: 225,
-    user: {
-      list: 223,
-      getDetail: 2
-    },
+    user.list: 223,
+    user.getDetail: 2
     getConnection: 145
   }
 }
