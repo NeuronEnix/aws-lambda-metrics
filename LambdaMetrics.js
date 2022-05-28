@@ -17,7 +17,11 @@ class LambdaMetrics extends LambdaTimer {
       log: typeof option.log === "function" ? option.log : null,
     }
   }
-
+  setLogger( logger ) { 
+    super.setLogger( logger );
+    this.#option.log = logger;
+    return this;
+  }
   getId() { return this.#containerId; }
   getMetrics() { return this.#data; }
   invokeType() { return this.#invokeCount > 1 ? "WARM_START" : "COLD_START"; }
@@ -55,7 +59,7 @@ class LambdaMetrics extends LambdaTimer {
   end() {
     this.#data.outTime = new Date();
     this.#data.totalTime = this.#data.outTime.valueOf() - this.#data.inTime.valueOf();
-    this.#data.timer = super.getTimer("");
+    this.#data.timer = super.getTimerObj();
     this.#prevResponseSentAt = performance.now();
     return this;
   }

@@ -3,93 +3,20 @@ const { LambdaError } = require("./LambdaError");
 const { types } = require("util");
 
 class LambdaTimer {
-  #timerObj; #timerTagEndList; #pendingTimer;  
+
+  #timerObj; #timerInProgressObj;  
   #option;
+  
   constructor( option={ log: null } ) { 
     this.#option = {
       log: typeof option.log === "function" ? option.log : null,
     }
     this.clearAllTimer();
   }
-  
-  clearAllTimer() {
-    this.#pendingTimer = {};
-    this.#timerObj = {};
-    this.#timerTagEndList = [];
-  }
 
-  #setKey( timerTag="", val, option={ overwrite: false } ) {
-    const tagList = timerTag.split("."); // split "user.list.detail" -> [ "user", "list", "detail" ]
-    const key = tagList.pop();
-    let curObj = this.#timerObj; 
-
-    for ( let i=0; i<tagList.length; ++i ) {
-
-      // check if already assigned to a number
-      if ( Number.isInteger( curObj[ tagList[i] ] ) ) {
-        const err = errObj.assignObjToNumberErr;
-        err.meta.timerTag = timerTag;
-        err.meta.existingTag = tagList.slice(0,i+1);
-        err.meta.existingTagValue = this.#getVal( err.meta.existingTag );
-        throw new LambdaError( err );
-
-      } else if ( ( curObj[ tagList[i] ] === null ) ) {
-        const err = errObj.assignObjToNullErr;
-        err.meta.timerTag = timerTag;
-        err.meta.existingTag = tagList.slice(0,i+1);
-        err.meta.existingTagValue = this.#getVal( err.meta.existingTag );
-        throw new LambdaError( err );
-
-      } else if ( curObj[ tagList[i] ] === undefined ) {
-        curObj[ tagList[i] ] = {};
-
-      }
-      
-      curObj = curObj[ tagList[i] ];
-
-    }
-
-    if ( !option.overwrite && Number.isInteger( curObj[key] ) ) {
-      const err = errObj.timerTagExistError;
-      err.meta.timerTag = timerTag;
-      err.meta.timerTagValue = this.#getVal( timerTag );
-      throw new LambdaError( err );
-    }
-
-    curObj[ key ] = val;
-    return val;
-  }
-
-  #getVal( timerTag="" ) {
-    if ( timerTag === "" ) return this.#timerObj;
-    const tagList = timerTag.split(".");
-    let val = this.#timerObj;
-    for ( const tag of tagList ) val = val[ tag ];
-    return val;
-  }
-  startTimer( timerTag="" ) {
-    validateTimerTag( timerTag );
-    this.#setKey( timerTag, performance.now() );
-  }
-
-  endTimer( timerTag="" ) {
-    validateTimerTag( timerTag );
-    if ( this.#timerTagEndList.includes( timerTag ) ) {
-      const err = errObj.endTimerErr;
-      err.meta.timerTag = timerTag;
-      err.meta.endTimeValue = this.#getVal( timerTag );
-      throw new LambdaError( err );
-    }
-    const elapsedTime = parseInt( performance.now() - this.#getVal( timerTag ) );
-    this.#setKey( timerTag, elapsedTime, { overwrite: true } );
-    this.#timerTagEndList.push( timerTag );
-    if( this.#option.log ) this.#option.log( "endTimer:", elapsedTime );
-    return elapsedTime;
-  }
-
-  getTimer( timerTag="" ) {
-    return this.#getVal( timerTag );
-  }
+  setLogger( logger ) { this.#option.log = logger; return this; }
+  clearAllTimer() { this.#timerObj = {}; this.#timerInProgressObj = {}; }
+  getTimerObj() { return this.#timerObj; }
 
   timeIt( timerTag ) {
     this.startTimer( timerTag );
@@ -100,21 +27,59 @@ class LambdaTimer {
       return returnedVal;
     }
   }
-
-}
-function validateTimerTag( timerTag ) {
-
-  if ( typeof timerTag != "string" ) { 
-    const err = errObj.timerTagTypeErr;
-    err.meta.timerTag = timerTag;
-    throw new LambdaError( err );
+  
+  startTimer( timerTag="" ) {
+    validator.validateTimerTag( timerTag );
+    if ( typeof this.#timerObj[ timerTag ] !== "undefined" ) {
+      const err = errObj.timerTagExistErr;
+      err.meta.timerTag = timerTag;
+      err.meta.timerTagValue = this.#timerObj[ timerTag ];
+      throw new LambdaError( err );
+    }
+    this.#timerObj[ timerTag ] = null;
+    this.#timerInProgressObj[ timerTag ] = performance.now();
+    return this;
   }
 
-  if ( timerTag.length == 0 ) { 
-    const err = errObj.timerTagLengthErr;
-    err.meta.timerTag = timerTag;
-    err.meta.timerTagLength = timerTag.length;
-    throw new LambdaError( err );
+  endTimer( timerTag="" ) {
+    validator.validateTimerTag( timerTag );
+
+    // timer was never started
+    if ( typeof this.#timerObj[ timerTag ] === "undefined" ) {
+      const err = errObj.endTimerErr;
+      err.meta.timerTag = timerTag;
+      err.meta.timerTagValue = this.#timerObj[ timerTag ];
+      throw new LambdaError( err );
+    }
+    // timer was already ended
+    else if ( typeof this.#timerObj[ timerTag ] === "number" ) {
+      const err = errObj.endTimerErr;
+      err.meta.timerTag = timerTag;
+      err.meta.endTimeValue = this.#timerObj[ timerTag ];
+      throw new LambdaError( err );
+    }
+    const elapsedTime = parseInt( performance.now() - this.#timerInProgressObj[ timerTag ] );
+    this.#timerObj[ timerTag ] = elapsedTime;
+    if( this.#option.log ) this.#option.log( `endTimer: ${timerTag} -> ${elapsedTime}ms` );
+    return elapsedTime;
+  }
+
+
+}
+const validator = {
+  validateTimerTag: timerTag => {
+    if ( typeof timerTag !== "string" ) { 
+      const err = errObj.timerTagTypeErr;
+      err.meta.timerTag = timerTag;
+      throw new LambdaError( err );
+    }
+    if ( timerTag.length === 0 ) { 
+      const err = errObj.timerTagLengthErr;
+      err.meta.timerTag = timerTag;
+      err.meta.timerTagLength = timerTag.length;
+      throw new LambdaError( err );
+    }
+    return timerTag;
   }
 }
 
@@ -125,7 +90,7 @@ const errObj = {
   
   timerTagTypeErr: { msg: "timerTag must be a string", meta: { origin: "LambdaTimer", err: "TIMER_TAG_TYPE_ERR" } },
   timerTagLengthErr: { msg: "timerTag must have at least 1 char", meta: { origin: "LambdaTimer", err: "TIMER_TAG_LENGTH_ERR" } },
-  timerTagExistError: { msg: "timerTag already exist", meta: { origin: "LambdaTimer", err: "TIMER_TAG_EXIST" } }
+  timerTagExistErr: { msg: "timerTag already exist", meta: { origin: "LambdaTimer", err: "TIMER_TAG_EXIST" } }
 }
 
 module.exports = { LambdaTimer };
