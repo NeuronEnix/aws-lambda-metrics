@@ -3,7 +3,7 @@ const { LambdaError } = require("./LambdaError");
 const { types } = require("util");
 
 class LambdaTimer {
-  #timerObj; #timerTagEndList;  
+  #timerObj; #timerTagEndList; #pendingTimer;  
   #option;
   constructor( option={ log: null } ) { 
     this.#option = {
@@ -13,6 +13,7 @@ class LambdaTimer {
   }
   
   clearAllTimer() {
+    this.#pendingTimer = {};
     this.#timerObj = {};
     this.#timerTagEndList = [];
   }
@@ -26,14 +27,24 @@ class LambdaTimer {
 
       // check if already assigned to a number
       if ( Number.isInteger( curObj[ tagList[i] ] ) ) {
-        const err = errObj.assignObjErr;
+        const err = errObj.assignObjToNumberErr;
         err.meta.timerTag = timerTag;
         err.meta.existingTag = tagList.slice(0,i+1);
         err.meta.existingTagValue = this.#getVal( err.meta.existingTag );
         throw new LambdaError( err );
+
+      } else if ( ( curObj[ tagList[i] ] === null ) ) {
+        const err = errObj.assignObjToNullErr;
+        err.meta.timerTag = timerTag;
+        err.meta.existingTag = tagList.slice(0,i+1);
+        err.meta.existingTagValue = this.#getVal( err.meta.existingTag );
+        throw new LambdaError( err );
+
+      } else if ( curObj[ tagList[i] ] === undefined ) {
+        curObj[ tagList[i] ] = {};
+
       }
       
-      if ( curObj[ tagList[i] ] === undefined ) curObj[ tagList[i] ] = {};
       curObj = curObj[ tagList[i] ];
 
     }
@@ -108,7 +119,8 @@ function validateTimerTag( timerTag ) {
 }
 
 const errObj = {
-  assignObjErr: { msg: "Cannot assign object to number", meta: { origin: "LambdaTimer", err: "ASSIGN_OBJ_ERR" } },
+  assignObjToNullErr: { msg: "Cannot assign object to null, a timer exist along the path", meta: { origin: "LambdaTimer", err: "ASSIGN_OBJ_TO_NULL_ERR" } },
+  assignObjToNumberErr: { msg: "Cannot assign object to number, a timer exist along the path", meta: { origin: "LambdaTimer", err: "ASSIGN_OBJ_TO_NUMBER_ERR" } },
   endTimerErr: { msg: "Timer has already been ended", meta: { origin: "LambdaTimer", err: "END_TIMER_ERR" } },
   
   timerTagTypeErr: { msg: "timerTag must be a string", meta: { origin: "LambdaTimer", err: "TIMER_TAG_TYPE_ERR" } },
