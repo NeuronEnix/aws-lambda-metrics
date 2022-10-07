@@ -1,4 +1,4 @@
-const { lambdaMetrics } = require("../lib/LambdaMetrics");
+const { lambdaMetrics } = require("../index");
 const delay = ms => new Promise( res => setTimeout( res, ms ));
 
 exports.handler = async (event, context) => {
@@ -37,8 +37,11 @@ exports.handler = async (event, context) => {
 
 this.handler().then( _ => {
   console.log( JSON.stringify(_, null, 2));
-  this.handler().then( _ => {
-    console.log( JSON.stringify(_, null, 2));
-  });
+
+  // // execute second time
+  // this.handler().then( _ => {
+  //   console.log( JSON.stringify(_, null, 2));
+  // });
+  
 });
 
