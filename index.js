@@ -1,3 +1,3 @@
-const { perfMetrics, newPerfMetricsInstance } = require("./lib/PerfMetrics");
+const { lambdaMetrics, newLambdaMetricsInstance } = require("./lib/LambdaMetrics");
 
-module.exports = { perfMetrics, newPerfMetricsInstance };
+module.exports = { lambdaMetrics, newLambdaMetricsInstance };
