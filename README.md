@@ -1,7 +1,7 @@
 # aws-lambda-metrics
 
 ```javascript
-const { lambdaMetrics } = require("./index");
+const { lambdaMetrics } = require("aws-lambda-metrics");
 const delay = ms => new Promise( res => setTimeout( res, ms ));
 
 exports.handler = async (event, context) => {
