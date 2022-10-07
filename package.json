@@ -16,12 +16,5 @@
   "bugs": {
     "url": "https://github.com/NeuronEnix/aws-lambda-metrics/issues"
   },
-  "homepage": "https://github.com/NeuronEnix/aws-lambda-metrics#readme",
-  "dependencies": {
-    "dotenv": "^16.0.0",
-    "moment": "^2.29.1",
-    "mysql2": "^2.3.3",
-    "sequelize": "^6.17.0",
-    "uuid": "^8.3.2"
-  }
+  "homepage": "https://github.com/NeuronEnix/aws-lambda-metrics#readme"
 }
