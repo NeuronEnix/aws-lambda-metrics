@@ -1,28 +1,29 @@
 # aws-lambda-metrics
 
 ```javascript
-require('dotenv').config();
-const { lambdaMetrics } = require("./LambdaMetrics");
-const { userList, userGetDetail } = require('./user');
+const { lambdaMetrics } = require("./index");
+const delay = ms => new Promise( res => setTimeout( res, ms ));
 
 exports.handler = async (event, context) => {
 
   try {
 
-    lambdaMetrics.begin( event, context ); // marks the start of API logic
+    // marks the start of API / logic
+    lambdaMetrics.begin( event, context );
     lambdaMetrics.startTimer( "logicTime" );
 
     // measure time using startTimer and endTimer
-    lambdaMetrics.startTimer( "user.list" );
-    const resData = { code: 200, msg: "OK", data: await userList() };
-    lambdaMetrics.endTimer( "user.list" );
+    lambdaMetrics.startTimer( "complex.logic" );
+    const complexLogicResult = await delay(100);
+    lambdaMetrics.endTimer( "complex.logic" );
 
     // measure time using timeIt( timerTag )( func() )   // func can be sync / async
-    const userDetail = lambdaMetrics.timeIt( "user.getDetail" )( await userGetDetail( 1 ) );
+    const anotherComplexLogicResult = lambdaMetrics.timeIt( "anotherComplex.logic" )( await delay( 150 ) );
 
     lambdaMetrics.endTimer( "logicTime" );
     lambdaMetrics.end(); // marks the end of API logic
 
+    const resData = { code: 200, msg: "OK" };
     resData.metrics = lambdaMetrics.getMetrics(); // send metrics in response
     return resData;
     
@@ -36,6 +37,12 @@ exports.handler = async (event, context) => {
   }
   
 };
+
+this.handler().then( _ => {
+  console.log( JSON.stringify(_, null, 2));  
+});
+
+
 ```
 
 
@@ -44,20 +51,26 @@ exports.handler = async (event, context) => {
 ```javascript
 // lambdaMetrics.getMetrics()
 {
-  containerId: "65d3780d-891f-4af6-bf28-0fc4b7a81728",
-  awsReqId: "ab21cdee-891f-4af6-bf28-132afb5dc456",
-  apiReqId: "fac4e123-891f-4af6-bf28-5613cf32a31b",
-  createdAt: "2022-03-17T15:50:35.799Z",
-  type: "COLD_START",
-  count: 1,
-  inTime: "2022-03-17T15:50:36.033Z",
-  reInvokedIn: 233,
-  outTime: "2022-03-17T15:50:36.263Z",
-  totalTime: 230,
-  timer: {
-    totalTime: 225,
-    user.list: 223,
-    user.getDetail: 2
+  "code": 200,
+  "msg": "OK",
+  "metrics": {
+    "containerId": "93877f15-599d-4aed-a28f-b74d5bc6bf11",
+    "awsReqId": null,
+    "apiReqId": null,
+    "invokeType": "COLD_START",
+    "invokeCount": 1,
+    "timeTracker": {
+      "createdAt": "2022-10-07T18:56:57.803Z",
+      "reInvokedIn": null,
+      "invokedAt": "2022-10-07T18:56:57.804Z",
+      "endAt": "2022-10-07T18:56:58.078Z"
+    },
+    "totalTime": 274,
+    "timer": {
+      "logicTime": 274,
+      "complex.logic": 115,
+      "anotherComplex.logic": 158
+    }
   }
 }
 ```
