@@ -54,22 +54,22 @@ this.handler().then( _ => {
   "code": 200,
   "msg": "OK",
   "metrics": {
-    "containerId": "0997a:1665644270268",
+    "containerId": "bad6f:2022-10-13T08:13:19.821Z",
     "awsReqId": null,
     "apiReqId": null,
     "invokeType": "COLD_START",
     "invokeCount": 1,
     "timeTracker": {
-      "createdAt": "2022-10-07T18:56:57.803Z",
+      "createdAt": "2022-10-13T08:13:19.821Z",
       "reInvokedIn": null,
-      "invokedAt": "2022-10-07T18:56:57.804Z",
-      "endAt": "2022-10-07T18:56:58.078Z"
+      "invokedAt": "2022-10-13T08:13:19.821Z",
+      "returnedAt": "2022-10-13T08:13:20.091Z"
     },
-    "totalTime": 274,
+    "totalTime": 270,
     "timer": {
-      "logicTime": 274,
-      "complex.logic": 115,
-      "anotherComplex.logic": 158
+      "logicTime": 269,
+      "complex.logic": 102,
+      "anotherComplex.logic": 166
     }
   }
 }
