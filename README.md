@@ -54,7 +54,7 @@ this.handler().then( _ => {
   "code": 200,
   "msg": "OK",
   "metrics": {
-    "containerId": "93877f15-599d-4aed-a28f-b74d5bc6bf11",
+    "containerId": "0997a:1665644270268",
     "awsReqId": null,
     "apiReqId": null,
     "invokeType": "COLD_START",
